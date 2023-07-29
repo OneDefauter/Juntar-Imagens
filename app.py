@@ -23,7 +23,7 @@ if sistema_operacional != 'Windows':
     os.exit()
 
 GITHUB_REPO = "https://api.github.com/repos/OneDefauter/Juntar-Imagens"
-version = "v1.2"
+version = "v1.3"
 
 try:
     response = requests.get(f"{GITHUB_REPO}/releases/latest")
@@ -103,7 +103,8 @@ class ImageJoinerApp:
         with zipfile.ZipFile(f"{latest_version}.zip", 'r') as zip_ref:
             zip_ref.extractall()
 
-        os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore")
+        if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore"):
+            os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore")
         os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.py")
         os.remove(file_name)
         shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.exe", self.current_dir)
