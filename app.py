@@ -10,6 +10,15 @@ import pickle
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
+# Obter o caminho absoluto do arquivo atual (app.py)
+file_path = os.path.abspath(__file__)
+
+# Obter apenas o nome do arquivo sem o caminho
+file_name = os.path.basename(file_path)
+
+# Imprimir o nome do arquivo
+print(file_name)
+
 # Obtém o nome do sistema operacional
 sistema_operacional = platform.system()
 
@@ -98,8 +107,8 @@ class ImageJoinerApp:
             zip_ref.extractall()
 
         os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore")
-        os.remove("app.py")
-        shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.py", self.current_dir)
+        os.remove("app.exe")
+        shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.exe", self.current_dir)
         os.removedirs(f"Juntar-Imagens-{latest_version.replace('v', '')}")
 
     def check_imagemagick_installed(self):
