@@ -8,6 +8,7 @@ import platform
 import zipfile
 import pickle
 import winsound
+import re
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
@@ -218,7 +219,7 @@ class ImageJoinerApp:
 
     def load_image_list(self):
         if self.image_folder:
-            image_files = [f for f in os.listdir(self.image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            image_files = sorted([f for f in os.listdir(self.image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
             self.image_listbox.delete(0, tk.END)
             for image_file in image_files:
                 self.image_listbox.insert(tk.END, image_file)
@@ -247,7 +248,7 @@ class ImageJoinerApp:
         win32api.SetFileAttributes(output_folder, atributos_atuais | win32con.FILE_ATTRIBUTE_HIDDEN)
 
         # Obtendo o nome da primeira imagem selecionada
-        first_image_name = sorted(selected_images)[0].split(".")[0]
+        first_image_name = sorted([f for f in os.listdir(selected_images) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
 
         try:
             output_filename = os.path.join(output_folder, f"{first_image_name}{extension}")
@@ -300,8 +301,7 @@ class ImageJoinerApp:
         
         backup = self.backup_var.get()
 
-        file_list = [f for f in os.listdir(self.image_folder) if os.path.isfile(os.path.join(self.image_folder, f))]
-        file_list.sort()
+        file_list = sorted([f for f in os.listdir(self.image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
 
         if backup:
             backup_path = os.path.join(self.image_folder, "Backup")
@@ -320,8 +320,7 @@ class ImageJoinerApp:
             new_filename = f"{base}__{ext}"
             os.rename(os.path.join(self.image_folder, filename), os.path.join(self.image_folder, new_filename))
 
-        file_list = [f for f in os.listdir(self.image_folder) if os.path.isfile(os.path.join(self.image_folder, f))]
-        file_list.sort()
+        file_list = sorted([f for f in os.listdir(self.image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
 
         for filename in file_list:
             base, ext = os.path.splitext(filename)
