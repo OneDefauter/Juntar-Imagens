@@ -119,6 +119,8 @@ class ImageJoinerApp:
 
         if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore"):
             os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore")
+        if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md"):
+            os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md")
         os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.py")
         os.remove("app.exe")
         shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.exe", self.current_dir)
