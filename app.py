@@ -234,7 +234,9 @@ class ImageJoinerApp:
             messagebox.showerror("Erro", "Selecione pelo menos duas imagens para juntar.")
             return
         
-        input_images = [os.path.join(self.image_folder, image) for image in selected_images]
+        sorted_selected_images = sorted(selected_images, key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
+        
+        input_images = [os.path.join(self.image_folder, image) for image in sorted_selected_images]
         output_folder = os.path.join(self.image_folder, "temp")
         backup = self.backup_var.get()
         extension = self.extension_var.get()
@@ -248,7 +250,7 @@ class ImageJoinerApp:
         win32api.SetFileAttributes(output_folder, atributos_atuais | win32con.FILE_ATTRIBUTE_HIDDEN)
 
         # Obtendo o nome da primeira imagem selecionada
-        first_image_name = sorted([f for f in os.listdir(selected_images) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=lambda x: [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', x)])
+        first_image_name = sorted(selected_images)[0].split(".")[0]
 
         try:
             output_filename = os.path.join(output_folder, f"{first_image_name}{extension}")
