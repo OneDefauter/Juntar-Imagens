@@ -19,7 +19,7 @@ if sistema_operacional != 'Windows':
     os.exit()
 
 GITHUB_REPO = "https://api.github.com/repos/OneDefauter/Juntar-Imagens"
-version = "v1.3"
+version = "v1.4"
 
 try:
     response = requests.get(f"{GITHUB_REPO}/releases/latest")
@@ -123,9 +123,11 @@ class ImageJoinerApp:
         if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md"):
             os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md")
         os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.py")
-        os.remove("app.exe")
-        shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.exe", self.current_dir)
+        os.remove("Juntar Imagens.exe")
+        shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/Juntar Imagens.exe", self.current_dir)
         os.removedirs(f"Juntar-Imagens-{latest_version.replace('v', '')}")
+        if os.path.exists(f"{self.current_dir}/app.exe"):
+            os.remove(f"{self.current_dir}/app.exe")
 
     def check_imagemagick_installed(self):
         try:
