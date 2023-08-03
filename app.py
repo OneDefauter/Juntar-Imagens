@@ -1,3 +1,4 @@
+import hashlib
 import os
 import shutil
 import subprocess
@@ -5,7 +6,6 @@ import requests
 import win32con
 import win32api
 import platform
-import zipfile
 import pickle
 import winsound
 import re
@@ -18,16 +18,57 @@ sistema_operacional = platform.system()
 if sistema_operacional != 'Windows':
     os.exit()
 
-GITHUB_REPO = "https://api.github.com/repos/OneDefauter/Juntar-Imagens"
-version = "v1.4"
+owner = "OneDefauter"  # Substitua pelo nome do usuário do repositório
+repo = "Juntar-Imagens"  # Substitua pelo nome do repositório
+branch = "main"  # Substitua pela branch desejada
+file_path = "Juntar%20Imagens.exe"  # Caminho do arquivo que você deseja atualizar (pode ser um caminho completo se estiver em subpastas)
+output_path = os.path.basename(__file__)  # Caminho para onde você deseja salvar o arquivo baixado
+
+def calculate_file_hash(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as file:
+        # Leitura do arquivo em blocos para tratar arquivos grandes
+        for byte_block in iter(lambda: file.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 try:
-    response = requests.get(f"{GITHUB_REPO}/releases/latest")
-    response.raise_for_status()
-    latest_version = response.json()["tag_name"]
-except requests.exceptions.RequestException as e:
-    print(f"Erro ao verificar atualizações: {e}")
-    latest_version = None
+    base_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}"
+    response = requests.get(base_url)
+
+    if response.status_code == 200:
+        new_content = response.content
+
+        current_hash = calculate_file_hash(output_path)
+        new_hash = hashlib.sha256(new_content).hexdigest()
+    else:
+        new_content = None
+        print(f"Erro ao obter o arquivo {file_path}.\nStatus code: {response.status_code}")
+
+except Exception as e:
+    new_content = None
+    print(e)
+
+def download_file_from_github(owner, repo, branch, file_path, output_path):
+    base_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}"
+    response = requests.get(base_url)
+
+    if response.status_code == 200:
+        new_content = response.content
+
+        current_hash = calculate_file_hash(output_path)
+        new_hash = hashlib.sha256(new_content).hexdigest()
+
+        if current_hash != new_hash:
+            with open(output_path, "wb") as file:
+                file.write(new_content)
+            print(f"Arquivo {file_path} atualizado em {output_path}")
+        else:
+            print(f"O arquivo {file_path} já está atualizado.")
+    else:
+        print(f"Erro ao obter o arquivo {file_path}. Status code: {response.status_code}")
+
+
 
 class ImageJoinerApp:
     def __init__(self, root):
@@ -105,29 +146,6 @@ class ImageJoinerApp:
             self.join_direction_var.set("vertical")
             self.show_success_msg_var.set(True)
             self.show_rename_success_msg_var.set(True)
-
-    def install_newversion(self):
-        update_url = f"https://github.com/OneDefauter/Juntar-Imagens/archive/refs/tags/{latest_version}.zip"
-        response = requests.get(update_url)
-        response.raise_for_status()
-        if os.path.exists(f"{latest_version}.zip"):
-            os.remove(f"{latest_version}.zip")
-        with open(f"{latest_version}.zip", "wb") as f:
-            f.write(response.content)
-
-        with zipfile.ZipFile(f"{latest_version}.zip", 'r') as zip_ref:
-            zip_ref.extractall()
-
-        if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore"):
-            os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/.gitignore")
-        if os.path.exists(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md"):
-            os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/README.md")
-        os.remove(f"Juntar-Imagens-{latest_version.replace('v', '')}/app.py")
-        os.remove("Juntar Imagens.exe")
-        shutil.move(f"Juntar-Imagens-{latest_version.replace('v', '')}/Juntar Imagens.exe", self.current_dir)
-        os.removedirs(f"Juntar-Imagens-{latest_version.replace('v', '')}")
-        if os.path.exists(f"{self.current_dir}/app.exe"):
-            os.remove(f"{self.current_dir}/app.exe")
 
     def check_imagemagick_installed(self):
         try:
@@ -335,16 +353,14 @@ class ImageJoinerApp:
         messagebox.showinfo("Sucesso", "Os arquivos foram renomeados com sucesso!") if self.show_rename_success_msg_var.get() else winsound.Beep(1000, 500)  # O primeiro argumento é a frequência em Hz e o segundo é a duração em milissegundos
         self.load_image_list()  # Atualizar a lista de imagens após a renomeação
 
-    def show_update_dialog(self):
-        if messagebox.askyesno("Nova Atualização", f"Tem uma nova atualização.\nVersão atual: {version}\nVersão mais recente: {latest_version}\nDeseja atualizar agora?"):
-            self.install_newversion()
-            messagebox.showinfo("Atualização Concluída", "A atualização foi concluída com sucesso!")
-            self.root.destroy()
-
     def check_for_updates(self):
-        if latest_version is not None:
-            if version != latest_version:
-                self.show_update_dialog()
+        if new_content is not None:
+            if current_hash != new_hash:
+                if messagebox.askyesno("Nova Atualização", f"Tem uma nova atualização.\nDeseja atualizar agora?"):
+                    with open(output_path, "wb") as file:
+                        file.write(new_content)
+                    messagebox.showinfo("Atualização Concluída", "A atualização foi concluída com sucesso!")
+                    self.root.destroy()
         return True
         
 if __name__ == "__main__":
