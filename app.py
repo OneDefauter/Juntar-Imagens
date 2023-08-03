@@ -18,6 +18,7 @@ sistema_operacional = platform.system()
 if sistema_operacional != 'Windows':
     os.exit()
 
+version = "v1.4"
 owner = "OneDefauter"  # Substitua pelo nome do usuário do repositório
 repo = "Juntar-Imagens"  # Substitua pelo nome do repositório
 branch = "main"  # Substitua pela branch desejada
